@@ -1,14 +1,20 @@
+/*
+ * qtcdbg Copyright (C) 2019 Frogtoss Games, Inc.
+ */
+
 package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 )
 
 func getProjectRoot(cfg *TomlConfig) string {
-	cfgDir, _ := filepath.Split(cfg.misc.cfgPath)
+	cfgDir, _ := filepath.Split(cfg.Misc.cfgPath)
 	projectRoot := filepath.Join(cfgDir, cfg.Project.RelativeRoot)
 	projectRoot = filepath.Clean(projectRoot)
 
@@ -16,7 +22,7 @@ func getProjectRoot(cfg *TomlConfig) string {
 }
 
 func getGeneratorPath(cfg *TomlConfig, filename string) string {
-	cfgDir, _ := filepath.Split(cfg.misc.cfgPath)
+	cfgDir, _ := filepath.Split(cfg.Misc.cfgPath)
 	return filepath.Join(cfgDir, filename)
 }
 
@@ -80,8 +86,6 @@ func GenerateCxxFlags(cfg *TomlConfig) error {
 }
 
 func GenerateFiles(cfg *TomlConfig) error {
-	fmt.Println("Generating files")
-
 	f, err := createFile(cfg, ".files")
 	if err != nil {
 		return err
@@ -89,8 +93,6 @@ func GenerateFiles(cfg *TomlConfig) error {
 	defer f.Close()
 
 	projectRoot := getProjectRoot(cfg)
-	fmt.Printf("Project Root: %s\n", projectRoot)
-
 	// push/pop the path to ensure generate paths do not include
 	// the full directory structure
 	cwd, err := os.Getwd()
@@ -118,13 +120,89 @@ func GenerateFiles(cfg *TomlConfig) error {
 				return nil
 			}
 
-			f.WriteString(path + "\n")
+			relativePath := filepath.Join(cfg.Project.RelativeRoot, path)
+			f.WriteString(relativePath + "\n")
 
 			return nil
 		})
 	if err != nil {
 		return err
 	}
+
+	return err
+}
+
+func GenerateIncludes(cfg *TomlConfig) error {
+	f, err := createFile(cfg, ".includes")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	projectRoot := getProjectRoot(cfg)
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	defer os.Chdir(cwd)
+	os.Chdir(projectRoot)
+
+	// headerFilesDirs contains all paths with header files in them.
+	// as with GenerateFiles above, this is a blunt way of going about
+	// it, but since it is just used for header search paths for a
+	// quick debug session, it is better to just be inclusive here.
+
+	//headerFilesDirs := make([]string, 10)
+	headerFilesDirs := make(map[string]int)
+	err = filepath.Walk(".",
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if !info.IsDir() {
+				return nil
+			}
+
+			allFiles, err := ioutil.ReadDir(path)
+			if err != nil {
+				return err
+			}
+			for _, file := range allFiles {
+				if filepath.Ext(file.Name()) == ".h" {
+					headerFilesDirs[path] = 1
+				}
+			}
+
+			return nil
+		})
+
+	for _, additionalPath := range cfg.Generate.AdditionalIncludeSearchDirs {
+		headerFilesDirs[additionalPath] = 1
+	}
+
+	for path, _ := range headerFilesDirs {
+		relativePath := filepath.Join(cfg.Project.RelativeRoot, path)
+		f.WriteString(relativePath + "\n")
+	}
+
+	return nil
+}
+
+func GenerateCreatorUser(cfg *TomlConfig) error {
+	f, err := createFile(cfg, ".creator.user")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	tmpl, err := template.New("creator").Parse(*tmplCreator)
+	if err != nil {
+		return nil
+	}
+
+	err = tmpl.Execute(f, cfg)
 
 	return err
 }

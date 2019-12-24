@@ -1,3 +1,7 @@
+/*
+ * qtcdbg Copyright (C) 2019 Frogtoss Games, Inc.
+ */
+
 package main
 
 import (
@@ -9,29 +13,32 @@ import (
 )
 
 //	"github.com/BurntSushi/toml"
-
 type TomlConfig struct {
 	Project struct {
 		Name         string `toml:"name"`
 		RelativeRoot string `toml:"relative_root"`
 	} `toml:"project"`
 	Build struct {
-		BuildDir  string `toml:"build_dir"`
-		BuildStep string `toml:"build_step"`
-		CleanStep string `toml:"clean_step"`
+		WorkingDir string `toml:"working_dir"`
+		Command    string `toml:"command"`
+		Arguments  string `toml:"arguments"`
 	} `toml:"build"`
 	Run struct {
-		RunPath       string `toml:"run_path"`
-		RunWorkingDir string `toml:"run_working_dir"`
-		RunArguments  string `toml:"run_arguments"`
+		WorkingDir     string `toml:"working_dir"`
+		ExecutablePath string `toml:"executable_path"`
+		Arguments      string `toml:"arguments"`
+		RunInTerminal  bool   `toml:"run_in_terminal"`
 	} `toml:"run"`
 	Generate struct {
-		ConfigDefines []string `toml:"config_defines"`
+		ConfigDefines               []string `toml:"config_defines"`
+		AdditionalIncludeSearchDirs []string `toml:"additional_include_search_dirs"`
 	} `toml:"generate"`
 
 	// not in toml parse
-	misc struct {
-		cfgPath string
+	Misc struct {
+		cfgPath       string
+		EnvironmentId string
+		ProjectRoot   string
 	}
 }
 
@@ -52,7 +59,8 @@ func parseConfig(path string) (TomlConfig, error) {
 		log.Fatal(err)
 	}
 
-	cfg.misc.cfgPath = path
+	cfg.Misc.cfgPath = path
+	cfg.Misc.ProjectRoot = getProjectRoot(&cfg)
 
 	return cfg, nil
 }
