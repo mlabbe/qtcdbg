@@ -14,7 +14,7 @@
 
 ## Building ##
 
-    go get github.com/mlabbe/qtcdbg/cmd/qtcdbg
+    go get -u github.com/mlabbe/qtcdbg/cmd/qtcdbg
     
 ## Installation ##
 
