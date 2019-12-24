@@ -27,8 +27,8 @@ Usable first Alpha. Tested with QtCreator 4.11.0 on Linux.  Could work on MacOS,
 
 ### Future Features ###
 
+ - Support other QtCreator versions
  - Support cleaning builds inside QtCreator
  - Support for scalar variants in the toml config file, ie: `make config=debug_$ARCH`
  - Default to putting generated files in a system temp dir
  - Macos and Windows support
- 

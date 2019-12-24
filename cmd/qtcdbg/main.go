@@ -158,7 +158,7 @@ func handleGenerationError(err error) {
 }
 
 func LaunchQtCreator(projectPath string) error {
-	exePath, err := exec.LookPath("qtcreator.sh")
+	exePath, err := exec.LookPath("qtcreator")
 	if err != nil {
 		return err
 	}
