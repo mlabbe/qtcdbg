@@ -1,0 +1,43 @@
+#
+# qtcdbg file -- everything necessary to launch QtCreator to debug this project.
+#
+# see https://github.com/mlabbe/qtcdbg
+#
+
+#
+# this toml file defines a project that complies with Native Project Standards
+# https://www.frogtoss.com/labs/pages/native-project-standards.html
+#
+# It assumes it is installed in a project at build/qtcdbg (hence the relative_root)
+
+[project]
+name = "nps_project"                                    # project name to generate
+relative_root = "../../"                                # project root relative to this config file.
+                                                        # all other paths in this file are relative to the project root.
+
+[build]
+working_dir = "build/gmake_linux"                       # directory to run build command in
+command = "make"                                        # build command
+arguments = "config=debug_x64"                          # build command arguments
+
+[run]
+working_dir = "build/gmake_linux/bin/x64/Debug/"        # cwd while debugging
+executable_path = "build/gmake_linux/bin/x64/Debug/slab_d" # path an executable file name
+arguments = ""                                          # command line arguments to launch app with
+run_in_terminal = false                                 # qtcreator feature - launch terminal for executable?
+
+[generate]
+# qtcreator's syntax highlighting dims proprocessor paths not generated.
+# this specifies additional defines for qtcreator
+config_defines = [
+ "_FILE_OFFSET_BITS 64"
+]
+
+
+# qtcdbg automatically adds all directories with header files to the
+# include search path.  if there are other paths to add to the project
+# generation, add them here.
+#
+# search paths are relative to the project root
+additional_include_search_dirs = [
+]

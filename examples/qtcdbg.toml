@@ -1,0 +1,37 @@
+#
+# qtcdbg file -- everything necessary to launch QtCreator to debug this project.
+#
+# see https://github.com/mlabbe/qtcdbg
+#
+
+# this toml file defines a simple project
+
+[project]
+name = "simple"                                        # project name to generate
+relative_root = "./"                                   # project root relative to this config file.
+                                                       # all other paths in this file are relative to the project root.
+
+[build]
+working_dir = "./"                                      # directory to run build command in
+command = "make"                                        # build command
+arguments = ""                                          # build command arguments
+
+[run]
+working_dir = "bin/"                                    # cwd while debugging
+executable_path = "bin/simple"                          # path an executable file name
+arguments = "--debug"                                   # command line arguments to launch app with
+run_in_terminal = true                                  # qtcreator feature - launch terminal for executable?
+
+[generate]
+# qtcreator's syntax highlighting dims proprocessor paths not generated.
+# this specifies additional defines for qtcreator
+config_defines = [
+]
+
+# qtcdbg automatically adds all directories with header files to the
+# include search path.  if there are other paths to add to the project
+# generation, add them here.
+#
+# search paths are relative to the project root
+additional_include_search_dirs = [
+]
