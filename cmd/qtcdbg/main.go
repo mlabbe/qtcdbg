@@ -22,6 +22,9 @@ var (
 	configPath = kingpin.Arg("config", "Path to config file").Default("qtcdbg.toml").String()
 )
 
+const VERSION_MAJOR = 0
+const VERSION_MINOR = 1
+
 // Read the Environment Id from QtCreator ini file.
 func GetEnvironmentId() (string, error) {
 	home := os.Getenv("HOME")

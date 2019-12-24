@@ -1,6 +1,6 @@
 # QtCreator Debug Launcher #
 
-**Need**: QtCreator has a powerful graphical debugger.  You want a powerful graphical debugger for your non-Qt project.
+**Need**: You want a powerful graphical debugger for your non-Qt project.
 
 **Problem**: Maintaining a QtCreator project file for a Makefile project _just for debugging_ is a time consuming challenge.
 
@@ -14,12 +14,12 @@
 
 ## Building ##
 
-    go get github.com/mlabbe/qtcdbg
+    go get github.com/mlabbe/qtcdbg/cmd/qtcdbg
     
 ## Installation ##
 
     mv qtcdbg /usr/local/bin
-    # ensure QtCreator.sh is in your path 
+    # ensure qtcreator.sh is in your path 
 
 ## Project Status ##
 
