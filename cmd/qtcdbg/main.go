@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"os"
 
@@ -21,6 +22,7 @@ var (
 	debug      = kingpin.Flag("debug", "Debug mode").Bool()
 	configPath = kingpin.Arg("config", "Path to config file").Default("").String()
 	version    = kingpin.Flag("version", "Show version and exit").Short('v').Bool()
+	noRun      = kingpin.Flag("no-run", "Do not run QtCreator after generation").Bool()
 )
 
 const ConfigDefault = "qtcdbg.toml"
@@ -64,7 +66,7 @@ func findConfig(userConfig string) (string, error) {
 		return *foundPath, nil
 	}
 
-	return "", errors.New("Could not find " + ConfigDefault)
+	return "", errors.New("Could not find " + ConfigDefault + "\n")
 }
 
 // Read the Environment Id from QtCreator ini file.
@@ -105,6 +107,49 @@ func GetEnvironmentId() (string, error) {
 	}
 
 	return "", errors.New("Could not find QtCreator.ini")
+}
+
+// Read the kit id 
+func GetKitId() (string, error) {
+	home := os.Getenv("HOME")
+	
+	ProfileLocations := []string {
+		home + "/.config/QtProject/qtcreator/profiles.xml",
+	}
+
+	var xml *os.File
+	for _, xmlLocation := range ProfileLocations {
+		xml, _ = os.Open(filepath.Clean(xmlLocation))
+		if xml != nil {
+			break
+		}
+		defer xml.Close()
+	}
+
+	if xml == nil {
+		return "", errors.New("Could not find qtcreator/profiles.xml")
+	}
+
+	scanner := bufio.NewScanner(xml)
+
+	// first guid in file after Profile.Default variable is a match
+	
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), "<variable>Profile.Default</variable>") {
+			break
+		}
+	}
+	
+	re := regexp.MustCompile(`\{(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})\}`)
+
+	for scanner.Scan() {
+		match := re.FindStringSubmatch(scanner.Text())
+		if len(match) != 0 {
+			return match[1], nil
+		}
+	}
+
+	return "", errors.New("Could not find profile in profiles.xml")
 }
 
 func handleGenerationError(err error) {
@@ -155,9 +200,18 @@ func main() {
 	}
 
 	cfg.Misc.EnvironmentId = environmentId
+	kitId, err := GetKitId()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Did not find the kit id.\n")
+		os.Exit(1)
+	}
+	cfg.Misc.KitId = kitId
+	
 	if *debug {
 		fmt.Printf("EnvironmentId: %s\n", cfg.Misc.EnvironmentId)
+		fmt.Printf("KitId: %s\n", cfg.Misc.KitId)
 	}
+
 
 	err = GenerateCflags(&cfg)
 	if err != nil {
@@ -189,6 +243,10 @@ func main() {
 		handleGenerationError(err)
 	}
 
+	if *noRun {
+		os.Exit(0)
+	}
+	
 	creatorPath := getGeneratorPath(&cfg, cfg.Project.Name+".creator")
 	err = LaunchQtCreator(creatorPath)
 	if err != nil {

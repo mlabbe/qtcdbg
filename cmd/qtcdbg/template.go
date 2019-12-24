@@ -89,7 +89,7 @@ var tmplCreator_411_0 = `<?xml version="1.0" encoding="UTF-8"?>
   <valuemap type="QVariantMap">
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{9b31c088-8f92-4570-ae52-c9fc80d1e35b}</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{{ printf "{%s}" .Misc.KitId }}</value>
    <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>

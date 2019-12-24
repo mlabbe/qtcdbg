@@ -38,6 +38,7 @@ type TomlConfig struct {
 	Misc struct {
 		cfgPath       string
 		EnvironmentId string
+		KitId         string
 		ProjectRoot   string
 	}
 }

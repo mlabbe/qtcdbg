@@ -19,7 +19,9 @@ func getProjectRoot(cfg *TomlConfig) string {
 	projectRoot = filepath.Clean(projectRoot)
 	projectRoot, _ = filepath.Abs(projectRoot)
 
-	//fmt.Printf("Project root: %s\ncfgDir: %s\n", projectRoot, cfgDir)
+	if *debug {
+		fmt.Printf("Project root: %s\ncfgDir: %s\n", projectRoot, cfgDir)
+	}
 
 	return projectRoot
 }
