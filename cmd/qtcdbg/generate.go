@@ -4,20 +4,29 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
+
+func getProjectRoot(cfg *TomlConfig) string {
+	cfgDir, _ := filepath.Split(cfg.misc.cfgPath)
+	projectRoot := filepath.Join(cfgDir, cfg.Project.RelativeRoot)
+	projectRoot = filepath.Clean(projectRoot)
+
+	return projectRoot
+}
 
 func getGeneratorPath(cfg *TomlConfig, filename string) string {
 	cfgDir, _ := filepath.Split(cfg.misc.cfgPath)
 	return filepath.Join(cfgDir, filename)
 }
 
-func createFile(cfg *TomlConfig, filename string) (*os.File, error) {
+func createFile(cfg *TomlConfig, suffix string) (*os.File, error) {
+	filename := cfg.Project.Name + suffix
 	return os.Create(getGeneratorPath(cfg, filename))
-	//return os.OpenFile(getGeneratorPath(cfg, filename), os.O_RDWR|os.O_CREATE, 0660)
 }
 
 func GenerateCflags(cfg *TomlConfig) error {
-	f, err := createFile(cfg, "slab.cflags")
+	f, err := createFile(cfg, ".cflags")
 	if err != nil {
 		return err
 	}
@@ -29,7 +38,7 @@ func GenerateCflags(cfg *TomlConfig) error {
 }
 
 func GenerateConfig(cfg *TomlConfig) error {
-	f, err := createFile(cfg, "slab.config")
+	f, err := createFile(cfg, ".config")
 	if err != nil {
 		return err
 	}
@@ -43,4 +52,79 @@ func GenerateConfig(cfg *TomlConfig) error {
 	f.WriteString(body)
 
 	return nil
+}
+
+func GenerateCreator(cfg *TomlConfig) error {
+	f, err := createFile(cfg, ".creator")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	body := "[General]\n"
+	f.WriteString(body)
+
+	return nil
+}
+
+func GenerateCxxFlags(cfg *TomlConfig) error {
+	f, err := createFile(cfg, ".cxxflags")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// empty file
+
+	return nil
+}
+
+func GenerateFiles(cfg *TomlConfig) error {
+	fmt.Println("Generating files")
+
+	f, err := createFile(cfg, ".files")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	projectRoot := getProjectRoot(cfg)
+	fmt.Printf("Project Root: %s\n", projectRoot)
+
+	// push/pop the path to ensure generate paths do not include
+	// the full directory structure
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	defer os.Chdir(cwd)
+	os.Chdir(projectRoot)
+
+	// just add almost all files under the project root.  because this
+	// qtc project will be used for debugging only, it is a low
+	// priority to cull this perfectly.
+	err = filepath.Walk(".",
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			// handles .git, etc
+			if strings.HasPrefix(path, ".") {
+				return nil
+			}
+
+			if info.IsDir() {
+				return nil
+			}
+
+			f.WriteString(path + "\n")
+
+			return nil
+		})
+	if err != nil {
+		return err
+	}
+
+	return err
 }

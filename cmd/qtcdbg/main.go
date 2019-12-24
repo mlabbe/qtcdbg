@@ -51,7 +51,7 @@ func GetEnvironmentId() (string, error) {
 }
 
 func handleGenerationError(err error) {
-	fmt.Fprintf(os.Stderr, "Generation error: %v", err)
+	fmt.Fprintf(os.Stderr, "Generation error: %v\n", err)
 	os.Exit(1)
 }
 
@@ -84,4 +84,15 @@ Running QtCreator once should generate this file.\n`)
 	if err != nil {
 		handleGenerationError(err)
 	}
+
+	err = GenerateCreator(&cfg)
+	if err != nil {
+		handleGenerationError(err)
+	}
+
+	err = GenerateFiles(&cfg)
+	if err != nil {
+		handleGenerationError(err)
+	}
+
 }
