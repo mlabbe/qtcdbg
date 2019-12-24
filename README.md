@@ -18,8 +18,8 @@
     
 ## Installation ##
 
-    mv qtcdbg /usr/local/bin
-    # ensure qtcreator.sh is in your path 
+    mv $GOPATH/bin/qtcdbg /usr/local/bin
+    # ensure qtcreator binary is in your path 
 
 ## Project Status ##
 
@@ -27,7 +27,8 @@ Usable first Alpha. Tested with QtCreator 4.11.0 on Linux.  Could work on MacOS,
 
 ### Future Features ###
 
- - Support other QtCreator versions
+ - Support other QtCreator versions than 4.11.0
+ - Release binary
  - Support cleaning builds inside QtCreator
  - Support for scalar variants in the toml config file, ie: `make config=debug_$ARCH`
  - Default to putting generated files in a system temp dir
