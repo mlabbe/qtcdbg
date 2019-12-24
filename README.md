@@ -2,7 +2,7 @@
 
 **Need**: You want a powerful graphical debugger for your non-Qt project.
 
-**Problem**: Maintaining a QtCreator project file for a Makefile project _just for debugging_ is a time consuming challenge.
+**Problem**: Maintaining and distributing a QtCreator project file for a Makefile project _just for debugging_ is a time consuming challenge.
 
 **Solution**: QtCreator Debug Launcher ("`qtcdbg`") discovers your project, generates an adhoc QtCreator project and launches QtCreator for you.
 

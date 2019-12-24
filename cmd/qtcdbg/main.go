@@ -19,11 +19,52 @@ import (
 
 var (
 	debug      = kingpin.Flag("debug", "Debug mode").Bool()
-	configPath = kingpin.Arg("config", "Path to config file").Default("qtcdbg.toml").String()
+	configPath = kingpin.Arg("config", "Path to config file").Default("").String()
 )
 
-const VERSION_MAJOR = 0
-const VERSION_MINOR = 1
+const ConfigDefault = "qtcdbg.toml"
+
+const VersionMajor = 0
+const VersionMinor = 1
+
+// find the user's config file
+func findConfig(userConfig string) (string, error) {
+	// user requested configs must be in the current dir
+	if userConfig != "" {
+		return userConfig, nil
+	}
+
+	// check for default filename in current directory
+	info, err := os.Stat(ConfigDefault)
+	if !os.IsNotExist(err) && !info.IsDir() {
+		return ConfigDefault, nil
+	}
+
+	// search for file recursively from the launch location
+	var foundPath *string
+	err = filepath.Walk(".",
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if !info.IsDir() && info.Name() == ConfigDefault {
+				foundPath = &path
+			}
+
+			return nil
+		})
+	if err != nil {
+		return "", nil
+	}
+
+	if foundPath != nil {
+		fmt.Printf("Launching with config %s\n", *foundPath)
+		return *foundPath, nil
+	}
+
+	return "", errors.New("Could not find " + ConfigDefault)
+}
 
 // Read the Environment Id from QtCreator ini file.
 func GetEnvironmentId() (string, error) {
@@ -88,7 +129,13 @@ func LaunchQtCreator(projectPath string) error {
 func main() {
 	kingpin.Parse()
 
-	cfg, err := parseConfig(*configPath)
+	actualConfigPath, err := findConfig(*configPath)
+	if err != nil {
+		fmt.Printf("Could not find config: %v", err)
+		os.Exit(1)
+	}
+
+	cfg, err := parseConfig(actualConfigPath)
 	if err != nil {
 		fmt.Printf("Error loading config: %v", err)
 		os.Exit(1)
