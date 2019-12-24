@@ -250,7 +250,7 @@ func main() {
 	creatorPath := getGeneratorPath(&cfg, cfg.Project.Name+".creator")
 	err = LaunchQtCreator(creatorPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to launch qtcreator: %s", err)
+		fmt.Fprintf(os.Stderr, "Failed to launch qtcreator: %s\n", err)
 		os.Exit(1)
 	}
 }
