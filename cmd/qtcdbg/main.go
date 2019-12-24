@@ -20,6 +20,7 @@ import (
 var (
 	debug      = kingpin.Flag("debug", "Debug mode").Bool()
 	configPath = kingpin.Arg("config", "Path to config file").Default("").String()
+	version    = kingpin.Flag("version", "Show version and exit").Short('v').Bool()
 )
 
 const ConfigDefault = "qtcdbg.toml"
@@ -59,7 +60,7 @@ func findConfig(userConfig string) (string, error) {
 	}
 
 	if foundPath != nil {
-		fmt.Printf("Launching with config %s\n", *foundPath)
+		fmt.Printf("Launching with found config %s\n", *foundPath)
 		return *foundPath, nil
 	}
 
@@ -128,6 +129,11 @@ func LaunchQtCreator(projectPath string) error {
 
 func main() {
 	kingpin.Parse()
+
+	if *version {
+		fmt.Printf("qtcdbg %d.%d\n", VersionMajor, VersionMinor)
+		os.Exit(0)
+	}
 
 	actualConfigPath, err := findConfig(*configPath)
 	if err != nil {
