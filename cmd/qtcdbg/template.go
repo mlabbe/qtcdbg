@@ -1,5 +1,5 @@
 /*
- * qtcdbg Copyright (C) 2019 Frogtoss Games, Inc.
+ * qtcdbg Copyright (C) 2019-2020 Frogtoss Games, Inc.
  */
 
 package main

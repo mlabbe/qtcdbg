@@ -1,5 +1,5 @@
 /*
- * qtcdbg Copyright (C) 2019 Frogtoss Games, Inc.
+ * qtcdbg Copyright (C) 2019-2020 Frogtoss Games, Inc.
  */
 
 package main
@@ -19,16 +19,25 @@ import (
 )
 
 var (
-	debug      = kingpin.Flag("debug", "Debug mode").Bool()
-	configPath = kingpin.Arg("config", "Path to config file").Default("").String()
-	version    = kingpin.Flag("version", "Show version and exit").Short('v').Bool()
-	noRun      = kingpin.Flag("no-run", "Do not run QtCreator after generation").Bool()
+	app = kingpin.New("qtcdbg", "QtCreator debugger launcher")
+
+	// common
+	debug   = app.Flag("debug", "Verbose debug qtcdbg").Bool()
+	version = kingpin.Flag("version", "Show version and exit").Short('v').Bool()
+
+	// launch (default command)
+	launchCmd  = app.Command("launch", "Launch QtCreator as a debugger").Default()
+	configPath = launchCmd.Arg("config", "Path to config file").Default("").String()
+	noRun      = launchCmd.Flag("no-run", "Do not run QtCreator -- just generate project files").Bool()
+
+	// init
+	initCmd = app.Command("init", "Create qtcdbg.toml for your project")
 )
 
 const ConfigDefault = "qtcdbg.toml"
 
 const VersionMajor = 0
-const VersionMinor = 1
+const VersionMinor = 4
 
 // find the user's config file
 func findConfig(userConfig string) (string, error) {
@@ -109,11 +118,11 @@ func GetEnvironmentId() (string, error) {
 	return "", errors.New("Could not find QtCreator.ini")
 }
 
-// Read the kit id 
+// Read the kit id
 func GetKitId() (string, error) {
 	home := os.Getenv("HOME")
-	
-	ProfileLocations := []string {
+
+	ProfileLocations := []string{
 		home + "/.config/QtProject/qtcreator/profiles.xml",
 	}
 
@@ -133,13 +142,13 @@ func GetKitId() (string, error) {
 	scanner := bufio.NewScanner(xml)
 
 	// first guid in file after Profile.Default variable is a match
-	
+
 	for scanner.Scan() {
 		if strings.Contains(scanner.Text(), "<variable>Profile.Default</variable>") {
 			break
 		}
 	}
-	
+
 	re := regexp.MustCompile(`\{(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})\}`)
 
 	for scanner.Scan() {
@@ -163,7 +172,7 @@ func LaunchQtCreator(projectPath string) error {
 		return err
 	}
 
-	cmd := exec.Command(exePath, projectPath)
+	cmd := exec.Command(exePath, projectPath, "-lastsession")
 	err = cmd.Run()
 	if err != nil {
 		return err
@@ -173,7 +182,11 @@ func LaunchQtCreator(projectPath string) error {
 }
 
 func main() {
-	kingpin.Parse()
+	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
+	case initCmd.FullCommand():
+		Init()
+		os.Exit(0)
+	}
 
 	if *version {
 		fmt.Printf("qtcdbg %d.%d\n", VersionMajor, VersionMinor)
@@ -206,12 +219,11 @@ func main() {
 		os.Exit(1)
 	}
 	cfg.Misc.KitId = kitId
-	
+
 	if *debug {
 		fmt.Printf("EnvironmentId: %s\n", cfg.Misc.EnvironmentId)
 		fmt.Printf("KitId: %s\n", cfg.Misc.KitId)
 	}
-
 
 	err = GenerateCflags(&cfg)
 	if err != nil {
@@ -246,11 +258,12 @@ func main() {
 	if *noRun {
 		os.Exit(0)
 	}
-	
+
 	creatorPath := getGeneratorPath(&cfg, cfg.Project.Name+".creator")
 	err = LaunchQtCreator(creatorPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to launch qtcreator: %s\n", err)
+		fmt.Println("qtcdbg requires qtcreator to be in the system path.  See \"usage\" in README for details.")
 		os.Exit(1)
 	}
 }
