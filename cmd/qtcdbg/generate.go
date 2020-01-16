@@ -211,3 +211,29 @@ func GenerateCreatorUser(cfg *TomlConfig) error {
 
 	return err
 }
+
+func CleanupGeneratedFiles(cfg *TomlConfig, skip bool) {
+	cfgDir, _ := filepath.Split(cfg.Misc.cfgPath)
+	
+	if skip {
+		fmt.Printf("Skipping cleanup of generated files.\n")
+		fmt.Printf("Find them in %s\n", cfgDir)
+		return
+	}
+	extensions := []string{".cflags",
+		".config",
+		".creator",
+		".cxxflags",
+		".files",
+		".includes",
+		".creator.user",
+	};
+
+	for _, ext := range extensions {
+		filename := cfg.Project.Name + ext
+
+		path := filepath.Join(cfgDir, filename)
+			
+		os.Remove(path)
+	}
+}

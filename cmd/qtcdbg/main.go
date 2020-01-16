@@ -36,7 +36,7 @@ var (
 )
 
 const VersionMajor = 0
-const VersionMinor = 7
+const VersionMinor = 8
 
 func defaultConfig() string {
 	return "qtcdbg." + runtime.GOOS + ".toml"
@@ -166,7 +166,6 @@ func GetKitId() (string, error) {
 
 func handleGenerationError(err error) {
 	fmt.Fprintf(os.Stderr, "Generation error: %v\n", err)
-	os.Exit(1)
 }
 
 func LaunchQtCreator(projectPath string) error {
@@ -192,41 +191,45 @@ func LaunchQtCreator(projectPath string) error {
 }
 
 func main() {
+	os.Exit(RealMain())
+}
+
+func RealMain() int {
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case initCmd.FullCommand():
 		Init()
-		os.Exit(0)
+		return 0;
 	}
 
 	if *version {
 		fmt.Printf("qtcdbg %d.%d\n", VersionMajor, VersionMinor)
-		os.Exit(0)
+		return 0;
 	}
 
 	actualConfigPath, err := findConfig(*configPath)
 	if err != nil {
 		fmt.Printf("Could not find config: %v", err)
-		os.Exit(1)
+		return 0;
 	}
 
 	cfg, err := parseConfig(actualConfigPath)
 	if err != nil {
 		fmt.Printf("Error loading config: %v", err)
-		os.Exit(1)
+		return 1;
 	}
 
 	environmentId, err := GetEnvironmentId()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Did not find the environmentId in the QtCreator config file.\n")
 		fmt.Fprintf(os.Stderr, "Running QtCreator once should generate this.\n")
-		os.Exit(1)
+		return 1;
 	}
 
 	cfg.Misc.EnvironmentId = environmentId
 	kitId, err := GetKitId()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Did not find the kit id.\n")
-		os.Exit(1)
+		return 1;
 	}
 	cfg.Misc.KitId = kitId
 
@@ -235,9 +238,11 @@ func main() {
 		fmt.Printf("KitId: %s\n", cfg.Misc.KitId)
 	}
 
+	defer CleanupGeneratedFiles(&cfg, *noRun)
 	err = GenerateCflags(&cfg)
 	if err != nil {
 		handleGenerationError(err)
+		return 1;
 	}
 
 	err = GenerateConfig(&cfg)
@@ -266,7 +271,7 @@ func main() {
 	}
 
 	if *noRun {
-		os.Exit(0)
+		return 0
 	}
 
 	creatorPath := getGeneratorPath(&cfg, cfg.Project.Name+".creator")
@@ -274,6 +279,8 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to launch qtcreator: %s\n", err)
 		fmt.Println("qtcdbg requires qtcreator to be in the system path.  See \"usage\" in README for details.")
-		os.Exit(1)
+		return 1
 	}
+
+	return 0
 }

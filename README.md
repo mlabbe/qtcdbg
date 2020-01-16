@@ -31,6 +31,8 @@ Project has been successfully used by the original developer.  There is one repo
 
 The version of QtCreator matters.  Up until now, QtCreator 4.11.0 is the only tested version.
 
+This works and is tested on Linux and MacOS.  It won't work on Windows in its current state.
+
 This works on Linux and while it could work on MacOS, it has not been tested.  It won't work on Windows in its current state.
 
 ## FAQs and Troubleshooting ##
@@ -38,12 +40,11 @@ This works on Linux and while it could work on MacOS, it has not been tested.  I
  - **I need specific environment variables to be set when I debug my program.**  By default, QtCreator uses environment variables it inherits at its launch when debugging.  Simply launch like this: `ENV_VAR=VALUE qtcdbg` and `ENV_VAR` will be passed along.
  - **Should I check in the files that qtcdbg generates?** No, add them to your gitignore (or similar). They contain local paths and data and cannot be shared.  Only the .toml file should be checked in.
  - **I ran qtcdbg on two projects and they both show up in the file bar in QtCreator. What is happening?**  Qtcdbg launches qtcreator with `-lastsession` in order to maintain breakpoints and open files across launches.  If you find this disagreeable, use QtCreator's session manager to create a new, named session, and then relaunch qtcdbg.
+ - **Where are the generated project files?** qtcdbg deletes them after running QtCreator.  If you want to generate them and keep them around, use `qtcdbg launch --no-run`.
 
 ### Future Features ###
 
- - Support other QtCreator versions than 4.11.0
+ - Support newer QtCreator versions than 4.11.0 once they come out
  - Release binary
  - Support cleaning builds inside QtCreator
- - Support for scalar variants in the toml config file, ie: `make config=debug_$ARCH`
- - Default to putting generated files in a system temp dir
- - Macos and Windows support
+ - Windows
