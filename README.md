@@ -10,9 +10,9 @@
 
  1. [Download QtCreator](https://download.qt.io/official_releases/qtcreator/4.11/4.11.0/).  4.11.0 is recommended.  Older versions do not always work.
  2. Linux: Copy QtCreator to your path.  MacOs: Run QtCreator once to clear notarization warning. 
- 1. Create `qtcdb.toml` file in your project from examples.
- 2. `cd` to project root
- 3. Type `qtcdbg`
+ 3. `cd` to project root
+ 4. Run `qtcdbg init` and answer questions about your project to create a config file.
+ 5. Type `qtcdbg` to launch QtCreator.
 
 ## Building ##
 

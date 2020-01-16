@@ -32,13 +32,15 @@ var (
 	noRun      = launchCmd.Flag("no-run", "Do not run QtCreator -- just generate project files").Bool()
 
 	// init
-	initCmd = app.Command("init", "Create qtcdbg.toml for your project")
+	initCmd = app.Command("init", "Create toml config for your project")
 )
 
-const ConfigDefault = "qtcdbg.toml"
-
 const VersionMajor = 0
-const VersionMinor = 5
+const VersionMinor = 7
+
+func defaultConfig() string {
+	return "qtcdbg." + runtime.GOOS + ".toml"
+}
 
 // find the user's config file
 func findConfig(userConfig string) (string, error) {
@@ -48,9 +50,9 @@ func findConfig(userConfig string) (string, error) {
 	}
 
 	// check for default filename in current directory
-	info, err := os.Stat(ConfigDefault)
+	info, err := os.Stat(defaultConfig())
 	if !os.IsNotExist(err) && !info.IsDir() {
-		return ConfigDefault, nil
+		return defaultConfig(), nil
 	}
 
 	// search for file recursively from the launch location
@@ -61,7 +63,7 @@ func findConfig(userConfig string) (string, error) {
 				return err
 			}
 
-			if !info.IsDir() && info.Name() == ConfigDefault {
+			if !info.IsDir() && info.Name() == defaultConfig() {
 				foundPath = &path
 			}
 
@@ -76,7 +78,7 @@ func findConfig(userConfig string) (string, error) {
 		return *foundPath, nil
 	}
 
-	return "", errors.New("Could not find " + ConfigDefault + "\n")
+	return "", errors.New("Could not find " + defaultConfig() + "\n")
 }
 
 // Read the Environment Id from QtCreator ini file.

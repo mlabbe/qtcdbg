@@ -14,7 +14,6 @@ import (
 	"github.com/chzyer/readline"
 )
 
-const Filename = "qtcdbg.toml"
 
 var tmplToml = `#
 # qtcdbg file -- everything necessary to launch QtCreator te debug this project
@@ -116,13 +115,13 @@ func Init() {
 	//
 	// create file befoer asking the user a ton of questions in case there's an error
 	//
-	if _, err := os.Stat(Filename); err == nil {
-		if !askYesNo(rl, Filename+" already exists.  Overwrite your config?") {
+	if _, err := os.Stat(defaultConfig()); err == nil {
+		if !askYesNo(rl, defaultConfig()+" already exists.  Overwrite your config?") {
 			fmt.Println("No changes made.")
 			os.Exit(1)
 		}
 	}
-	outFile, err := os.Create(Filename)
+	outFile, err := os.Create(defaultConfig())
 	if err != nil {
 		panic(err)
 	}
@@ -179,7 +178,7 @@ func Init() {
 		panic(err)
 	}
 
-	fmt.Printf("%s was successfully written with your preferences!", Filename)
+	fmt.Printf("%s was successfully written with your preferences!", defaultConfig())
 	fmt.Println("Feel free to check this file in to source control. It should work for all users.\n")
 	fmt.Println("There are a couple options you may want to edit, even after this init procedure:")
 	fmt.Println(" - config_defines lets you specify defines that alter QtCreator's source gray-out")
