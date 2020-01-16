@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"runtime"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -37,7 +38,7 @@ var (
 const ConfigDefault = "qtcdbg.toml"
 
 const VersionMajor = 0
-const VersionMinor = 4
+const VersionMinor = 5
 
 // find the user's config file
 func findConfig(userConfig string) (string, error) {
@@ -167,9 +168,16 @@ func handleGenerationError(err error) {
 }
 
 func LaunchQtCreator(projectPath string) error {
+	// try to find it in path
 	exePath, err := exec.LookPath("qtcreator")
 	if err != nil {
-		return err
+		if runtime.GOOS != "darwin" {
+			return err
+		}
+	}
+
+	if runtime.GOOS == "darwin" {
+		exePath = "/Applications/Qt Creator.app/Contents/MacOS/Qt Creator"
 	}
 
 	cmd := exec.Command(exePath, projectPath, "-lastsession")
