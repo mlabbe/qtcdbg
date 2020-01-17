@@ -9,9 +9,9 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"runtime"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"os"
@@ -24,7 +24,7 @@ var (
 
 	// common
 	debug   = app.Flag("debug", "Verbose debug qtcdbg").Bool()
-	version = kingpin.Flag("version", "Show version and exit").Short('v').Bool()
+	version = app.Flag("version", "Show version and exit").Short('v').Bool()
 
 	// launch (default command)
 	launchCmd  = app.Command("launch", "Launch QtCreator as a debugger").Default()
@@ -36,7 +36,7 @@ var (
 )
 
 const VersionMajor = 0
-const VersionMinor = 8
+const VersionMinor = 9
 
 func defaultConfig() string {
 	return "qtcdbg." + runtime.GOOS + ".toml"
@@ -150,7 +150,7 @@ func GetKitId() (string, error) {
 		xml, _ = os.Open(filepath.Clean(xmlLocation))
 		if xml != nil {
 			defer xml.Close()
-			
+
 			break
 		}
 	}
@@ -220,38 +220,38 @@ func RealMain() int {
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case initCmd.FullCommand():
 		Init()
-		return 0;
+		return 0
 	}
 
 	if *version {
 		fmt.Printf("qtcdbg %d.%d\n", VersionMajor, VersionMinor)
-		return 0;
+		return 0
 	}
 
 	actualConfigPath, err := findConfig(*configPath)
 	if err != nil {
 		fmt.Printf("Could not find config: %v", err)
-		return 0;
+		return 0
 	}
 
 	cfg, err := parseConfig(actualConfigPath)
 	if err != nil {
 		fmt.Printf("Error loading config: %v", err)
-		return 1;
+		return 1
 	}
 
 	environmentId, err := GetEnvironmentId()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Did not find the environmentId in the QtCreator config file.\n")
 		fmt.Fprintf(os.Stderr, "Running QtCreator once should generate this.\n")
-		return 1;
+		return 1
 	}
 
 	cfg.Misc.EnvironmentId = environmentId
 	kitId, err := GetKitId()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Did not find the kit id.\n")
-		return 1;
+		return 1
 	}
 	cfg.Misc.KitId = kitId
 
@@ -264,7 +264,7 @@ func RealMain() int {
 	err = GenerateCflags(&cfg)
 	if err != nil {
 		handleGenerationError(err)
-		return 1;
+		return 1
 	}
 
 	err = GenerateConfig(&cfg)

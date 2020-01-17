@@ -29,11 +29,11 @@ Building requires Go.  When the project matures, binaries will be available in t
 
 Project has been successfully used by the original developer.  There is one report of another user having success.
 
-The version of QtCreator matters.  Up until now, QtCreator 4.11.0 is the only tested version.
+The version of QtCreator matters.  Up until now, QtCreator 4.11.0 is the only tested version.  Use this version.
 
-This works and is tested on Linux and MacOS.  It won't work on Windows in its current state.
+This works and is tested on Linux, MacOS and Windows, tested on amd64.
 
-This works on Linux and while it could work on MacOS, it has not been tested.  It won't work on Windows in its current state.
+QtCreator hangs on the developer's machine on Windows when debugging but it doesn't seem to be related to qtcdbg.  Have fun!
 
 ## FAQs and Troubleshooting ##
 
@@ -45,6 +45,5 @@ This works on Linux and while it could work on MacOS, it has not been tested.  I
 ### Future Features ###
 
  - Support newer QtCreator versions than 4.11.0 once they come out
- - Release binary
  - Support cleaning builds inside QtCreator
  - Windows

@@ -15,3 +15,5 @@
 # vendor/
 
 cmd/qtcdbg/qtcdbg
+arch/
+cmd/qtcdbg/bin
