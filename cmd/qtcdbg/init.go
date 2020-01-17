@@ -72,8 +72,6 @@ func escape(s *string) string {
 	s2 := strings.ReplaceAll(*s, `\`, `\\`)
 	*s = s2
 
-	fmt.Printf("escaped: %s\n", s2)
-
 	return s2
 }
 
