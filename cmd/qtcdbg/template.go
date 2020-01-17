@@ -100,7 +100,7 @@ var tmplCreator_411_0 = `<?xml version="1.0" encoding="UTF-8"?>
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
       <value type="QString" key="ProjectExplorer.ProcessStep.Arguments">{{.Build.Arguments}}</value>
       <value type="QString" key="ProjectExplorer.ProcessStep.Command">{{.Build.Command}}</value>
-      <value type="QString" key="ProjectExplorer.ProcessStep.WorkingDirectory">{{.Misc.ProjectRoot}}/{{.Build.WorkingDir}}</value>
+      <value type="QString" key="ProjectExplorer.ProcessStep.WorkingDirectory">{{.Build.WorkingDir}}</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.ProcessStep</value>
      </valuemap>
      <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">1</value>
@@ -193,7 +193,7 @@ var tmplCreator_411_0 = `<?xml version="1.0" encoding="UTF-8"?>
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">{{.Misc.ProjectRoot}}/{{.Run.ExecutablePath}}</value>
+    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">{{.Run.ExecutablePath}}</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey"></value>
     <value type="QString" key="RunConfiguration.Arguments">{{.Run.Arguments}}</value>
@@ -205,7 +205,7 @@ var tmplCreator_411_0 = `<?xml version="1.0" encoding="UTF-8"?>
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseTerminal">{{ printf "%t" .Run.RunInTerminal }}</value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory">{{.Misc.ProjectRoot}}/{{.Run.WorkingDir}}</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory">{{.Run.WorkingDir}}</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory.default"></value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">1</value>

@@ -217,7 +217,6 @@ func CleanupGeneratedFiles(cfg *TomlConfig, skip bool) {
 	
 	if skip {
 		fmt.Printf("Skipping cleanup of generated files.\n")
-		fmt.Printf("Find them in %s\n", cfgDir)
 		return
 	}
 	extensions := []string{".cflags",

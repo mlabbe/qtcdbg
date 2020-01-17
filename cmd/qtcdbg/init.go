@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"runtime"
 
 	"github.com/chzyer/readline"
 )
@@ -30,7 +31,7 @@ var tmplToml = `#
 name = "{{ .Project.Name }}"
 
 # project root relative to this config file
-relative_root = "./"
+relative_root = "{{ .Project.RelativeRoot }}"
 
 [build]
 
@@ -60,7 +61,21 @@ run_in_terminal = true
 # this specifies additional defines for qtcreator
 config_defines = [
 ]
+
+additional_include_search_dirs = [
+]
 `
+
+var Separator = fmt.Sprintf("%c", filepath.Separator)
+
+func escape(s *string) string {
+	s2 := strings.ReplaceAll(*s, `\`, `\\`)
+	*s = s2
+
+	fmt.Printf("escaped: %s\n", s2)
+
+	return s2
+}
 
 func askYesNo(rl *readline.Instance, question string) bool {
 	fmt.Println(question + " (y/N)")
@@ -150,11 +165,15 @@ func Init() {
 	if !askYesNo(rl, "When you launch your compiled program, do you do it from the project root?") {
 		cfg.Run.WorkingDir = askString(rl, "What is the working directory, relative to project root, that the debugged executable runs in? (eg: bin/)", nil)
 	} else {
-		cfg.Run.WorkingDir = "./"
+		cfg.Run.WorkingDir = "." + Separator
 	}
 
-	candidateExecutablePath := cfg.Run.WorkingDir + "/" + cfg.Project.Name
+	candidateExecutablePath := cfg.Run.WorkingDir + Separator + cfg.Project.Name
+	if runtime.GOOS == "windows" {
+		candidateExecutablePath += ".exe"
+	}
 	cfg.Run.ExecutablePath = askString(rl, "What is the path and filename of the debug executable?", &candidateExecutablePath)
+	
 	cfg.Run.Arguments = askString(rl, "Which command line arguments would you like to launch it with when debugging?", nil)
 	cfg.Run.RunInTerminal = true
 
@@ -162,7 +181,22 @@ func Init() {
 		cfg.Build.WorkingDir = askString(rl, "What is the directory, relative to project root, that your build command runs in? (eg: build/)", nil)
 		cfg.Build.Command = askString(rl, "What is the build command?", nil)
 		cfg.Build.Arguments = askString(rl, "What are the build command arguments?", nil)
+	} else {
+		// just launch qtcdbg.exe --help to get it to dummy return 0
+		cfg.Build.WorkingDir, _ = filepath.Abs(filepath.Dir(os.Args[0]))
+		cfg.Build.Command = os.Args[0]
+		cfg.Build.Arguments = "--help"
 	}
+
+	//
+	// escape slashes in paths
+	//
+	escape(&cfg.Project.RelativeRoot)
+	escape(&cfg.Run.WorkingDir)
+	escape(&cfg.Build.WorkingDir)
+	escape(&cfg.Run.ExecutablePath)
+	escape(&cfg.Build.Command)
+	
 
 	//
 	// render template

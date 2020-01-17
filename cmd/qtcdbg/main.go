@@ -85,7 +85,6 @@ func findConfig(userConfig string) (string, error) {
 func GetEnvironmentId() (string, error) {
 	home := os.Getenv("HOME")
 
-	// todo: support windows
 	IniLocations := []string{
 		// common and linux
 		home + "/.config/QtProject/QtCreator.ini",
@@ -94,9 +93,19 @@ func GetEnvironmentId() (string, error) {
 		// macos
 		home + "/.Library/Application Support/QtProject/Qt Creator/QtCreator.ini"}
 
+	if runtime.GOOS == "windows" {
+		appData := os.Getenv("APPDATA")
+		IniLocations = []string{
+			filepath.Join(appData, "QtProject", "QtCreator.ini"),
+		}
+	}
+
 	var ini *os.File
 	for _, iniLocation := range IniLocations {
 
+		if *debug {
+			fmt.Printf("Trying ini location %s", iniLocation)
+		}
 		ini, _ = os.Open(filepath.Clean(iniLocation))
 		if ini != nil {
 			break
@@ -129,13 +138,21 @@ func GetKitId() (string, error) {
 		home + "/.config/QtProject/qtcreator/profiles.xml",
 	}
 
+	if runtime.GOOS == "windows" {
+		appData := os.Getenv("APPDATA")
+		ProfileLocations = []string{
+			filepath.Join(appData, "QtProject", "qtcreator", "profiles.xml"),
+		}
+	}
+
 	var xml *os.File
 	for _, xmlLocation := range ProfileLocations {
 		xml, _ = os.Open(filepath.Clean(xmlLocation))
 		if xml != nil {
+			defer xml.Close()
+			
 			break
 		}
-		defer xml.Close()
 	}
 
 	if xml == nil {
@@ -172,13 +189,18 @@ func LaunchQtCreator(projectPath string) error {
 	// try to find it in path
 	exePath, err := exec.LookPath("qtcreator")
 	if err != nil {
-		if runtime.GOOS != "darwin" {
+		if runtime.GOOS == "linux" {
 			return err
 		}
 	}
 
 	if runtime.GOOS == "darwin" {
 		exePath = "/Applications/Qt Creator.app/Contents/MacOS/Qt Creator"
+	}
+
+	if runtime.GOOS == "windows" && err != nil {
+		// I TOLD you we only supported one version for now
+		exePath = "c:\\Qt\\qtcreator-4.11.0\\bin\\qtcreator.exe"
 	}
 
 	cmd := exec.Command(exePath, projectPath, "-lastsession")

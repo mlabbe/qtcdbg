@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 )
@@ -58,6 +59,15 @@ func parseConfig(path string) (TomlConfig, error) {
 
 	if err := toml.Unmarshal(tomlBytes, &cfg); err != nil {
 		log.Fatal(err)
+	}
+
+	// handle relative paths
+	if !filepath.IsAbs(cfg.Run.ExecutablePath) {
+		cfg.Run.ExecutablePath = filepath.Join(cfg.Misc.ProjectRoot, cfg.Run.ExecutablePath)
+	}
+
+	if !filepath.IsAbs(cfg.Run.WorkingDir) {
+		cfg.Run.WorkingDir = filepath.Join(cfg.Misc.ProjectRoot, cfg.Run.WorkingDir)
 	}
 
 	cfg.Misc.cfgPath = path
