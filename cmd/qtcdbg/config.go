@@ -61,17 +61,13 @@ func parseConfig(path string) (TomlConfig, error) {
 		log.Fatal(err)
 	}
 
-	// handle relative paths
-	if !filepath.IsAbs(cfg.Run.ExecutablePath) {
-		cfg.Run.ExecutablePath = filepath.Join(cfg.Misc.ProjectRoot, cfg.Run.ExecutablePath)
-	}
-
-	if !filepath.IsAbs(cfg.Run.WorkingDir) {
-		cfg.Run.WorkingDir = filepath.Join(cfg.Misc.ProjectRoot, cfg.Run.WorkingDir)
-	}
-
 	cfg.Misc.cfgPath = path
 	cfg.Misc.ProjectRoot = getProjectRoot(&cfg)
+
+	// handle relative paths
+	cfg.Run.ExecutablePath = filepath.Join(cfg.Misc.ProjectRoot, cfg.Run.ExecutablePath)
+
+	cfg.Run.WorkingDir = filepath.Join(cfg.Misc.ProjectRoot, cfg.Run.WorkingDir)
 
 	return cfg, nil
 }
