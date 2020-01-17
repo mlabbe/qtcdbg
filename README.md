@@ -14,16 +14,21 @@
  4. Run `qtcdbg init` and answer questions about your project to create a config file.
  5. Type `qtcdbg` to launch QtCreator.
 
-## Building ##
+## Downloading ##
 
-Building requires Go.  When the project matures, binaries will be available in the releases tab.
+See the releases tab on the official github page.
 
-    go get -u github.com/mlabbe/qtcdbg/cmd/qtcdbg
-    
 ## Installation ##
 
     mv $GOPATH/bin/qtcdbg /usr/local/bin
     # ensure qtcreator binary is in your path 
+
+## Building ##
+
+Building requires Go.
+
+    go get -u github.com/mlabbe/qtcdbg/cmd/qtcdbg
+
 
 ## Project Status ##
 
@@ -46,4 +51,4 @@ QtCreator hangs on the developer's machine on Windows when debugging but it does
 
  - Support newer QtCreator versions than 4.11.0 once they come out
  - Support cleaning builds inside QtCreator
- - Windows
+ - Polish Windows support
