@@ -1,5 +1,5 @@
 /*
- * qtcdbg Copyright (C) 2019-2020 Frogtoss Games, Inc.
+ * qtcdbg Copyright (C) 2019-2020, 2024 Frogtoss Games, Inc.
  */
 
 package main
@@ -13,7 +13,7 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-//	"github.com/BurntSushi/toml"
+// "github.com/BurntSushi/toml"
 type TomlConfig struct {
 	Project struct {
 		Name         string `toml:"name"`
@@ -32,6 +32,7 @@ type TomlConfig struct {
 	} `toml:"run"`
 	Generate struct {
 		ConfigDefines               []string `toml:"config_defines"`
+		ConfigCFlags                []string `toml:"config_cflags"`
 		AdditionalIncludeSearchDirs []string `toml:"additional_include_search_dirs"`
 	} `toml:"generate"`
 

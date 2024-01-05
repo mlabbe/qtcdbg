@@ -1,5 +1,5 @@
 /*
- * qtcdbg Copyright (C) 2019-2020 Frogtoss Games, Inc.
+ * qtcdbg Copyright (C) 2019-2020, 2024 Frogtoss Games, Inc.
  */
 
 package main
@@ -261,7 +261,7 @@ func RealMain() int {
 	}
 
 	defer CleanupGeneratedFiles(&cfg, *noRun)
-	err = GenerateCflags(&cfg)
+	err = GenerateFlags(&cfg)
 	if err != nil {
 		handleGenerationError(err)
 		return 1

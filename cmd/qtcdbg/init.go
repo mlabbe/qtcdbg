@@ -1,5 +1,5 @@
 /*
- * qtcdbg Copyright (C) 2019-2020 Frogtoss Games, Inc.
+ * qtcdbg Copyright (C) 2019-2020, 2024 Frogtoss Games, Inc.
  */
 
 package main
@@ -8,13 +8,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"text/template"
-	"runtime"
 
 	"github.com/chzyer/readline"
 )
-
 
 var tmplToml = `#
 # qtcdbg file -- everything necessary to launch QtCreator te debug this project
@@ -60,6 +59,10 @@ run_in_terminal = true
 # qtcreator's syntax highlighting dims proprocessor paths not generated.
 # this specifies additional defines for qtcreator
 config_defines = [
+]
+
+# qtcreator config flags for c
+config_cflags = [
 ]
 
 additional_include_search_dirs = [
@@ -171,7 +174,7 @@ func Init() {
 		candidateExecutablePath += ".exe"
 	}
 	cfg.Run.ExecutablePath = askString(rl, "What is the path and filename of the debug executable?", &candidateExecutablePath)
-	
+
 	cfg.Run.Arguments = askString(rl, "Which command line arguments would you like to launch it with when debugging?", nil)
 	cfg.Run.RunInTerminal = true
 
@@ -194,7 +197,6 @@ func Init() {
 	escape(&cfg.Build.WorkingDir)
 	escape(&cfg.Run.ExecutablePath)
 	escape(&cfg.Build.Command)
-	
 
 	//
 	// render template
