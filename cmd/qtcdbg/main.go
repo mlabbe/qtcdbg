@@ -112,8 +112,9 @@ func GetIniPath() (string, error) {
 
 		if *debug {
 			fmt.Printf("Found ini at %s\n", iniLocation)
-			return iniLocation, nil
 		}
+
+		return iniLocation, nil
 	}
 
 	return "", errors.New("Could not find QtCreator.ini")
@@ -282,7 +283,7 @@ func RealMain() int {
 
 	environmentId, err := GetEnvironmentId()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Did not find the environmentId in the QtCreator config file.\n")
+		fmt.Fprintf(os.Stderr, "Did not find the environmentId in the QtCreator config file: %+v\n", err)
 		fmt.Fprintf(os.Stderr, "Running QtCreator once should generate this.\n")
 		return 1
 	}
