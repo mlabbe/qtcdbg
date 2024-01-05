@@ -46,7 +46,16 @@ QtCreator hangs on the developer's machine on Windows when debugging but it does
  - **I ran qtcdbg on two projects and they both show up in the file bar in QtCreator. What is happening?**  Qtcdbg launches qtcreator with `-lastsession` in order to maintain breakpoints and open files across launches.  If you find this disagreeable, use QtCreator's session manager to create a new, named session, and then relaunch qtcdbg.
  - **Where are the generated project files?** qtcdbg deletes them after running QtCreator.  If you want to generate them and keep them around, use `qtcdbg launch --no-run`.
  - **Why does my hardware accelerated window not come up when debugging?**  Set `run_in_terminal = false` in the toml file.
+ - **I am using the new compile commands override, but it doesn't seem to be working.** Check `preferences->C++->clangd` to ensure "Use clangd" is set.  The path to the executable should be a shell script under a temp directory.
 
 ### Future Features ###
 
  - Support cleaning builds inside QtCreator
+
+### Override compile_commands.json ###
+
+One of the things that has always been a problem is that QtCreator attempts to parse the codebase, imposing its own warnings and defines. It’s very hard to silence and is incongruous with the usual build settings in the project when using the primary text editor.
+
+QtCreator uses clangd on the backend, generating a `compile_commands.json` in a hidden directory.  By overriding that `compile_commands.json` with a real, pre-existing one for the project, the error messages are on par with any LSP editor.
+
+A `compile_commands.json` file can be produced with numerous tools, including `ninja -t compdb`.

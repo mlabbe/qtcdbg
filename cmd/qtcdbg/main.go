@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"gopkg.in/ini.v1"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -35,8 +36,8 @@ var (
 	initCmd = app.Command("init", "Create toml config for your project")
 )
 
-const VersionMajor = 0
-const VersionMinor = 9
+const VersionMajor = 1
+const VersionMinor = 1
 
 func defaultConfig() string {
 	return "qtcdbg." + runtime.GOOS + ".toml"
@@ -81,8 +82,7 @@ func findConfig(userConfig string) (string, error) {
 	return "", errors.New("Could not find " + defaultConfig() + "\n")
 }
 
-// Read the Environment Id from QtCreator ini file.
-func GetEnvironmentId() (string, error) {
+func GetIniPath() (string, error) {
 	home := os.Getenv("HOME")
 
 	IniLocations := []string{
@@ -100,34 +100,51 @@ func GetEnvironmentId() (string, error) {
 		}
 	}
 
-	var ini *os.File
 	for _, iniLocation := range IniLocations {
 
 		if *debug {
-			fmt.Printf("Trying ini location %s", iniLocation)
+			fmt.Printf("Trying ini location %s\n", iniLocation)
 		}
-		ini, _ = os.Open(filepath.Clean(iniLocation))
-		if ini != nil {
-			break
+
+		if _, err := os.Stat(iniLocation); errors.Is(err, os.ErrNotExist) {
+			continue
 		}
-		defer ini.Close()
-	}
 
-	if ini == nil {
-		return "", errors.New("Could not find QtCreator.ini")
-	}
-
-	scanner := bufio.NewScanner(ini)
-	re := regexp.MustCompile("Settings\\\\EnvironmentId=@ByteArray\\(\\{(.*)\\}\\)")
-
-	for scanner.Scan() {
-		match := re.FindStringSubmatch(scanner.Text())
-		if len(match) != 0 {
-			return match[1], nil
+		if *debug {
+			fmt.Printf("Found ini at %s\n", iniLocation)
+			return iniLocation, nil
 		}
 	}
 
 	return "", errors.New("Could not find QtCreator.ini")
+}
+
+// Read the Environment Id from QtCreator ini file.
+func GetEnvironmentId() (string, error) {
+	iniPath, err := GetIniPath()
+	if err != nil {
+		return "", err
+	}
+
+	cfg, err := ini.Load(iniPath)
+	if err != nil {
+		return "", fmt.Errorf("Failed to parse ini: %+v", err)
+	}
+	environmentIdKey := cfg.Section("ProjectExplorer").Key("Settings\\EnvironmentId").String()
+
+	// key is like @ByteArray({a70246c0-282b-4255-87b8-41e5cc6b85ff}), and we just want the guid
+	reFindGuid := regexp.MustCompile(`\{(.+)\}`)
+	environmentId := reFindGuid.FindStringSubmatch(environmentIdKey)
+
+	if len(environmentId) != 2 {
+		return "", fmt.Errorf("No 'ProjectExplorer.Settings\\EnvironmentId' key found in %s", iniPath)
+	}
+
+	if *debug {
+		fmt.Printf("Found environmentId %s\n", environmentId[1])
+	}
+
+	return environmentId[1], nil
 }
 
 // Read the kit id
@@ -212,6 +229,20 @@ func LaunchQtCreator(projectPath string) error {
 	return nil
 }
 
+func cleanupPath(path string) {
+	if path == "" {
+		return
+	}
+
+	err := os.Remove(path)
+
+	if !*debug {
+		if err != nil {
+			panic("could not cleanup path on exit")
+		}
+	}
+}
+
 func main() {
 	os.Exit(RealMain())
 }
@@ -240,12 +271,44 @@ func RealMain() int {
 		return 1
 	}
 
+	if cfg.CompileCommands.Override {
+		compileCommandsPath := cfg.CompileCommands.Dir + "/compile_commands.json"
+		_, err := os.Stat(compileCommandsPath)
+		if errors.Is(err, os.ErrNotExist) {
+			fmt.Printf("Compile commands file '%s' does not exist\n", compileCommandsPath)
+			return 1
+		}
+	}
+
 	environmentId, err := GetEnvironmentId()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Did not find the environmentId in the QtCreator config file.\n")
 		fmt.Fprintf(os.Stderr, "Running QtCreator once should generate this.\n")
 		return 1
 	}
+
+	var clangdWrapperPath string
+	if cfg.CompileCommands.Override {
+		cfg.Misc.OriginalClangdPath, err = GetClangdPath()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Clangd path not found: %+v\n", cfg.Misc.OriginalClangdPath)
+			return 1
+		}
+
+		clangdWrapperPath, err = WriteClangdWrapper(cfg.Misc.OriginalClangdPath, cfg.CompileCommands.Dir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to write clangd wrapper script: %+v\n", err)
+			return 1
+		}
+
+		err = SetClangdPath(clangdWrapperPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to write clangd wrapper to path: %+v\n", err)
+			return 1
+		}
+	}
+	defer cleanupPath(clangdWrapperPath)
+	defer SetClangdPath(cfg.Misc.OriginalClangdPath)
 
 	cfg.Misc.EnvironmentId = environmentId
 	kitId, err := GetKitId()
@@ -261,6 +324,10 @@ func RealMain() int {
 	}
 
 	defer CleanupGeneratedFiles(&cfg, *noRun)
+
+	//
+	// begin generation
+	//
 	err = GenerateFlags(&cfg)
 	if err != nil {
 		handleGenerationError(err)

@@ -35,13 +35,18 @@ type TomlConfig struct {
 		ConfigCFlags                []string `toml:"config_cflags"`
 		AdditionalIncludeSearchDirs []string `toml:"additional_include_search_dirs"`
 	} `toml:"generate"`
+	CompileCommands struct {
+		Override bool   `toml:"override"`
+		Dir      string `toml:"dir"`
+	} `toml:"compile_commands"`
 
 	// not in toml parse
 	Misc struct {
-		cfgPath       string
-		EnvironmentId string
-		KitId         string
-		ProjectRoot   string
+		cfgPath            string
+		EnvironmentId      string
+		KitId              string
+		ProjectRoot        string
+		OriginalClangdPath string
 	}
 }
 

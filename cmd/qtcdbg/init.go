@@ -67,6 +67,16 @@ config_cflags = [
 
 additional_include_search_dirs = [
 ]
+
+[compile_commands]
+# if qtcreator is set up to use clangd, it will create its own .qtc_clangd/compile_commands.json
+# which is not a good match.  Set this to true to override compile_commands.json with
+# one supplied for your own project.  This helps warnings, defines and other compile flags
+# match your main development ones.
+override = false
+
+# dir to compile_commands.json, relative to working dir
+path = "src/"
 `
 
 var Separator = fmt.Sprintf("%c", filepath.Separator)
